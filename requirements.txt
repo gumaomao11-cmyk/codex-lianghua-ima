@@ -1,6 +1,7 @@
-# 云端（GitHub Actions）运行所需依赖
+# cloud (GitHub Actions) dependencies
 requests>=2.31
 pandas>=2.0
 numpy>=1.24
 reportlab>=4.0
 matplotlib>=3.7
+pypdf>=4.0

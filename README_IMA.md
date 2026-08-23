@@ -25,3 +25,15 @@
 ## 安全红线
 - 订阅库内容（`backtest_output/kb_*.csv/json`、`kb_export/*`）**不进公开 GitHub**。
 - `mail.env` / `alpaca.env` 不进 GitHub。
+
+## ✅ 已解决：从 ima 客户端本地缓存还原 PDF 正文
+- 官方 API `get_media_info` 对订阅库返回 `220030`（无权限），搜索接口也不返回正文片段。
+- 但 ima 客户端在本地浏览器缓存里会留下已打开 PDF 的数据。`kb_cache_extract.py` 会自动扫描：
+  `C:\Users\ASUS\AppData\Local\ima.copilot\User Data\Default\Cache\Cache_Data`
+- 它能还原可读的 `.pdf` 和 `.txt` 全文到：
+  - `F:\even-codex\us-stock-data\kb_cache_pdfs`
+  - `F:\even-codex\us-stock-data\kb_cache_text`
+- 再输出过滤后的本地因子：`backtest_output\kb_cache_factors.csv`
+- 运行：`python kb_cache_extract.py`
+- 已安装依赖：`pypdf`
+- ⚠️ 这些还原的 PDF/文本是订阅库内容，**只保存在本地数据目录，绝不推入 GitHub**。
