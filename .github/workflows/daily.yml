@@ -1,0 +1,90 @@
+name: Strategy Daily
+
+on:
+  # 21:40 UTC = 次日 05:40 北京时间（美股收盘 16:00 ET 后约 1.7 小时）
+  schedule:
+    - cron: '40 21 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+# 防止两次运行同时 push 打架
+concurrency:
+  group: strategy-daily
+  cancel-in-progress: false
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install CJK font (matplotlib 中文图)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk fontconfig
+
+      - name: Install Python deps
+        run: pip install --quiet -r requirements.txt
+
+      # ---------- 1) 更新数据 ----------
+      - name: Update stock wide prices
+        env:
+          STOCK_DATA_DIR: ${{ github.workspace }}/data
+        run: python update_prices_wide.py
+
+      - name: Update ETF reference
+        env:
+          ETFS_REF_FILE: ${{ github.workspace }}/data/etf-ref.csv
+        run: python update_etf_ref.py
+
+      # ---------- 2) 跑策略 + 发邮件 ----------
+      - name: Run strategy + email report
+        env:
+          ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_ENDPOINT:   https://paper-api.alpaca.markets
+          QQ_MAIL_AUTH_CODE: ${{ secrets.QQ_MAIL_AUTH_CODE }}
+          QQ_MAIL_FROM:      869357594@qq.com
+          QQ_MAIL_TO:        869357594@qq.com
+          STOCK_DATA_DIR:    ${{ github.workspace }}/data
+          ETFS_REF_FILE:     ${{ github.workspace }}/data/etf-ref.csv
+          PAPER_TARGET_EQUITY: "20000"
+        run: python auto_run.py
+
+      # ---------- 3) 回写数据 + 状态 ----------
+      - name: Commit & push data + state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git stash push -- data backtest_output 2>/dev/null || true
+          git reset --hard origin/main
+          git stash pop 2>/dev/null || true
+          git add data/ || true
+          git add backtest_output/paper_state.json backtest_output/paper_log.csv backtest_output/tpsl_log.csv || true
+          git add backtest_output/current_holdings_6m_skip1_top10.csv 2>/dev/null || true
+          git add backtest_output/weekly_report_*.pdf 2>/dev/null || true
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: auto-update $(date -u +%Y-%m-%d)"
+            git push origin HEAD:main
+          else
+            echo "no changes"
+          fi
+
+      # ---------- 失败告警 ----------
+      - name: Notify failure (WeChat + email)
+        if: failure()
+        env:
+          WECHAT_SEND_KEY:   ${{ secrets.WECHAT_SEND_KEY }}
+          QQ_MAIL_AUTH_CODE: ${{ secrets.QQ_MAIL_AUTH_CODE }}
+          QQ_MAIL_FROM:      869357594@qq.com
+          QQ_MAIL_TO:        869357594@qq.com
+        run: |
+          bash .github/notify_fail.sh "Strategy Daily 跑挂" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

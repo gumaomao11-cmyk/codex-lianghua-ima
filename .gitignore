@@ -1,0 +1,38 @@
+# Large data files (keep local, do not track)
+*.pkl
+*.parquet
+*.h5
+*.feather
+*.arrow
+data_sample/
+raw_data/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# temp
+*.log
+
+# local secrets (do not commit)
+mail.env
+alpaca.env
+
+
+# IMA knowledge base export (keep local, paid content)
+backtest_output/kb_*.csv
+backtest_output/kb_raw_items.json
+
+backtest_output/kb_*.json
+
+# Runtime outputs (keep local, not tracked in experiment repo)
+backtest_output/*
+logs/*
