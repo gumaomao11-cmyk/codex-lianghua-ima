@@ -1,3 +1,10 @@
+# ⬛ 本仓库 = IMA 因子实验副本
+
+> 此仓库是从原项目 `lianghua2` 独立出来的**实验策略**，核心差异是叠加 IMA 知识库因子。
+> 原策略仓库保持不变：https://github.com/gumaomao11-cmyk/codex--
+> 实验说明见：[README_IMA.md](README_IMA.md)
+
+---
 # 美股量化 · 非日内动量策略（激进前 10 只版）
 
 > **资金量 2 万美元起步 · Alpaca Paper 实盘跟踪中 · 全自动 GitHub Actions 运行**
