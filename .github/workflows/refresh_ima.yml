@@ -1,7 +1,7 @@
-name: IMA Strategy Daily
+name: IMA Strategy Refresh (prices + list + email)
 
 on:
-  # 21:40 UTC = 次日 05:40 北京时间（美股收盘 16:00 ET 后约 1.7 小时）
+  # 每天 05:40 北京时间自动跑；也可手动触发
   schedule:
     - cron: '40 21 * * *'
   workflow_dispatch: {}
@@ -10,13 +10,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: ima-strategy-daily
+  group: ima-refresh
   cancel-in-progress: false
 
 jobs:
-  daily:
+  refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,7 +29,22 @@ jobs:
       - name: Install Python deps
         run: pip install --quiet -r requirements.txt
 
-      - name: Run IMA strategy daily report + email
+      - name: Update stock prices
+        env:
+          STOCK_DATA_DIR: ${{ github.workspace }}/data
+        run: python update_prices_wide.py
+
+      - name: Update ETF reference
+        env:
+          STOCK_DATA_DIR: ${{ github.workspace }}/data
+        run: python update_etf_ref.py
+
+      - name: Reselect IMA target list
+        env:
+          STOCK_DATA_DIR: ${{ github.workspace }}/data
+        run: python select_ima_final.py
+
+      - name: Run IMA daily report + email
         env:
           ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
@@ -42,19 +57,19 @@ jobs:
           PAPER_TARGET_EQUITY: "20000"
         run: python auto_run_ima.py
 
-
-      - name: Commit & push IMA state
+      - name: Commit & push updated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ima/paper_log_ima.csv data/ima/paper_state_ima.json data/ima/ima_orders.json
+          git add data/
           if ! git diff --staged --quiet; then
-            git commit -m "chore(ima): auto-update $(date -u +%Y-%m-%d)"
+            git commit -m "chore(ima): auto-refresh $(date -u +%Y-%m-%d)"
             git pull --rebase origin main || true
             git push origin HEAD:main
           else
-            echo "no changes"
+            echo "no data changes"
           fi
+
       - name: Notify failure (WeChat + email)
         if: failure()
         env:
@@ -63,5 +78,4 @@ jobs:
           QQ_MAIL_FROM:      869357594@qq.com
           QQ_MAIL_TO:        869357594@qq.com
         run: |
-          bash .github/notify_fail.sh "IMA Strategy Daily 跑挂" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-
+          bash .github/notify_fail.sh "IMA Refresh 跑挂" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
