@@ -36,3 +36,6 @@ backtest_output/kb_*.json
 # Runtime outputs (keep local, not tracked in experiment repo)
 backtest_output/*
 logs/*
+
+# local LLM credential
+.env.llm
