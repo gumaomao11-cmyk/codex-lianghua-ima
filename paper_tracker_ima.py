@@ -9,10 +9,18 @@ if hasattr(sys.stdout, "reconfigure"):
     try: sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception: pass
 
-from _paths import OUT
-TARGET  = OUT / "ima_final_top10.csv"
-STATE   = OUT / "paper_state_ima.json"
-LOG     = OUT / "paper_log_ima.csv"
+from _paths import WS, OUT
+def _ima_file(name):
+    """优先读 backtest_output，云端回退到 data/ima（已提交到仓库）。"""
+    p = OUT / name
+    if p.exists(): return p
+    alt = WS / "data" / "ima" / name
+    return alt if alt.exists() else p
+
+TARGET  = _ima_file("ima_final_top10.csv")
+# state/log 放 data/ima，这样跨云端每日运行时能保留累计指标
+STATE   = WS / "data" / "ima" / "paper_state_ima.json"
+LOG     = WS / "data" / "ima" / "paper_log_ima.csv"
 TARGET_EQ = float(os.environ.get("PAPER_TARGET_EQUITY", "20000"))
 SPY_FILE = Path(os.environ.get("ETFS_REF_FILE") or r"F:\even-codex\panda\backtest\prices_2016.csv")
 
@@ -56,7 +64,7 @@ tickers = sorted(target["ticker"].astype(str).tolist())
 target_set = set(tickers)
 # ---- IMA 仓位：优先按已成交的 IMA 订单份额跟踪（避免与主策略重叠股重复计值） ----
 ima_orders = []
-orders_file = OUT / "ima_orders.json"
+orders_file = _ima_file("ima_orders.json")
 if orders_file.exists():
     try: ima_orders = json.loads(orders_file.read_text(encoding="utf-8"))
     except Exception: ima_orders = []

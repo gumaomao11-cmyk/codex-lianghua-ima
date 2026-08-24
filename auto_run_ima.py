@@ -42,8 +42,14 @@ def main():
     # 附件
     att = []
     csv = OUT / "paper_log_ima.csv"
+    if not csv.exists():
+        alt = WS / "data" / "ima" / "paper_log_ima.csv"
+        csv = alt if alt.exists() else csv
     if csv.exists(): att.append(csv)
     tgt = OUT / "ima_final_top10.csv"
+    if not tgt.exists():
+        alt = WS / "data" / "ima" / "ima_final_top10.csv"
+        tgt = alt if alt.exists() else tgt
     if tgt.exists(): att.append(tgt)
     print(subject)
     print(body[:1200], "...")
