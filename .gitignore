@@ -42,3 +42,5 @@ logs/*
 
 .env.ima
 
+data/zsxq_plus_latest.json
+data/ima_waizi_folder.csv

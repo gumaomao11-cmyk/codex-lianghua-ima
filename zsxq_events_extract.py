@@ -137,10 +137,9 @@ def main():
                             "strength": float(e.get("strength",0.5)), "pt_delta_pct": float(e.get("pt_delta_pct",0) or 0),
                             "evidence": str(e.get("evidence",""))[:80]})
         rows.extend(newrows)
-        if newrows:
-            with cache.open("a", encoding="utf-8") as f:
-                f.write(json.dumps({"media_id": mid, "sig": newrows}, ensure_ascii=False)+"\n")
-            done.add(mid)
+        with cache.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"media_id": mid, "sig": newrows}, ensure_ascii=False)+"\n")
+        done.add(mid)
         print(f"[{i}/{len(candidates)}] {d} {mid} -> {len(newrows)}", flush=True)
         time.sleep(a.sleep)
 
