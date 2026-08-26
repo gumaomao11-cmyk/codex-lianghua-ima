@@ -39,3 +39,6 @@ logs/*
 
 # local LLM credential
 .env.llm
+
+.env.ima
+
