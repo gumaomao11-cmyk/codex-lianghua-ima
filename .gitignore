@@ -1,46 +1,13 @@
-# Large data files (keep local, do not track)
-*.pkl
-*.parquet
-*.h5
-*.feather
-*.arrow
-data_sample/
-raw_data/
+# Generated data
+data/duckdb/*.parquet
+data/duckdb/*.duckdb
+backtest_output/*.csv
+backtest_output/*.json
+backtest_output/*.md
+logs/*.log
 
-# OS / editor
-Thumbs.db
-.DS_Store
-.vscode/
-.idea/
-
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-
-# temp
+# Temp / debug
+_*.py
 *.log
-
-# local secrets (do not commit)
-mail.env
-alpaca.env
-
-
-# IMA knowledge base export (keep local, paid content)
-backtest_output/kb_*.csv
-backtest_output/kb_raw_items.json
-
-backtest_output/kb_*.json
-
-# Runtime outputs (keep local, not tracked in experiment repo)
-backtest_output/*
-logs/*
-
-# local LLM credential
-.env.llm
-
-.env.ima
-
-data/zsxq_plus_latest.json
-data/ima_waizi_folder.csv
+__pycache__/
+.pytest_cache/
