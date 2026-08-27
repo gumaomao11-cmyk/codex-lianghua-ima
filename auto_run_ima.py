@@ -20,7 +20,7 @@ OUT.mkdir(exist_ok=True)
 
 def run(label, *args):
     env = os.environ.copy()
-    env["PYTHONIOENCODING"] = "utf-8"; env["PYTHONIOUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"; env["PYTHONUTF8"] = "1"
     full = [sys.executable, *map(str, args)]
     log_path = LOG / f"auto_ima_{label}.log"
     try:
@@ -58,4 +58,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

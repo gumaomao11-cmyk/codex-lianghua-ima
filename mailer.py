@@ -22,7 +22,7 @@ def _from_env_file(p):
     return out
 
 _cfg = _from_env_file(ENV_FILE)
-os.environ.update(_cfg)  # 让运行时也能从 os.environ 读到
+os.environ.update(_cfg)
 
 AUTH  = (os.environ.get("QQ_MAIL_AUTH_CODE") or "").strip()
 FROM  = (os.environ.get("QQ_MAIL_FROM") or "869357594@qq.com").strip()
@@ -32,18 +32,20 @@ PORT  = int(os.environ.get("QQ_MAIL_PORT") or "465")
 
 def send(subject, body, attachments=None):
     if not AUTH:
-        print("[mailer] QQ_MAIL_AUTH_CODE 未设置（请把授权码写到 mail.env）")
+        print("[mailer] QQ_MAIL_AUTH_CODE 未设置")
         return False
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = FROM
     msg["To"] = TO
-    msg.set_content(body, subtype="plain", charset="utf-8")
+    # plain text + HTML alternative, both base64 to fix Chinese garbling
+    msg.set_content(body, subtype="plain", charset="utf-8", cte="base64")
+    html = "<html><body><pre style='font-family:monospace;font-size:13px;white-space:pre-wrap'>" + body + "</pre></body></html>"
+    msg.add_alternative(html, subtype="html", charset="utf-8", cte="base64")
     for p in (attachments or []):
         p = Path(p)
         if not p.exists(): continue
         data = p.read_bytes()
-        # 简单按后缀分类型
         suffix = p.suffix.lower()
         main, sub = "application", "octet-stream"
         if suffix == ".csv":   main, sub = "text", "csv"
