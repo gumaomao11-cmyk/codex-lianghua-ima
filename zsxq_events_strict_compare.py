@@ -21,7 +21,10 @@ rebal = list(ml.truncate("2025-09-30", px.index[-1]).index)
 
 def load_cache(name):
     events = []
-    p = OUT / f"zsxq_events_浑水调研Plus_{name}_cache.jsonl"
+    if name:
+        p = OUT / f"zsxq_events_浑水调研Plus_{name}_cache.jsonl"
+    else:
+        p = OUT / "zsxq_events_浑水调研Plus_cache.jsonl"
     if not p.exists(): return pd.DataFrame()
     for line in p.read_text(encoding="utf-8", errors="ignore").splitlines():
         try:
@@ -171,3 +174,4 @@ if not df_strict.empty:
             print(f"  差异: {diff:+.2f} ({'改善' if diff > 0 else '无改善' if diff == 0 else '变差'})")
 else:
     print("  严格因子: 无数据")
+
