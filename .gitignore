@@ -11,3 +11,27 @@ _*.py
 *.log
 __pycache__/
 .pytest_cache/
+# API keys and env files
+.env.llm
+.env.ima
+mail.env
+
+# Cache and large output files
+backtest_output/*.jsonl
+backtest_output/*.json
+backtest_output/*.csv
+logs/
+
+# Temporary debug files
+*_debug.py
+tmp_*.py
+test_model_speed.py
+zsxq_debug.py
+zsxq_month_debug.py
+build_parquet_from_cache.py
+
+# Data files (large)
+data/*.csv
+data/ima/*.csv
+data/zsxq_*.json
+data/ima/*.json

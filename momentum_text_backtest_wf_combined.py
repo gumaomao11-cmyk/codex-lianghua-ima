@@ -30,11 +30,12 @@ def load_text(src, prefix):
     return df
 
 text_hunshui = load_text("text_sentiment_lexicon_浑水调研Plus.csv", "hs")
+text_duanping = load_text("text_sentiment_lexicon_duanping.csv", "dp")
 text_ima = load_text("text_sentiment_ima.csv", "ima")
 print(f"浑水: {len(text_hunshui)} rows, {text_hunshui['ticker'].nunique()} tickers, {text_hunshui['date'].nunique()} dates")
 print(f"IMA : {len(text_ima)} rows, {text_ima['ticker'].nunique()} tickers, {text_ima['date'].nunique()} dates")
 
-text = text_hunshui.merge(text_ima, on=["date", "ticker"], how="outer")
+text = text_hunshui.merge(text_ima, on=["date", "ticker"], how="outer").merge(text_duanping, on=["date", "ticker"], how="outer")
 for c in text.columns:
     if c not in ["date", "ticker"]:
         text[c] = text[c].fillna(0)
@@ -56,7 +57,7 @@ def build_features(d):
     feats["vol_20d"] = daily_ret.iloc[d_idx-19:d_idx+1].std() * np.sqrt(252) if d_idx >= 20 else np.nan
 
     t = text[(text["date"] < d) & (text["date"] >= d - pd.Timedelta(days=20))]
-    for prefix in ["hs", "ima"]:
+    for prefix in ["hs", "ima", "dp"]:
         for col in ["tsm", "tna", "disagreement"]:
             cname = f"{prefix}_{col}"
             if cname in t.columns:
